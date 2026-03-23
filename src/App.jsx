@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import { FaPlus, FaPencilAlt, FaTrash } from 'react-icons/fa';
 
@@ -6,6 +6,27 @@ function App() {
   const [todos, setTodos] = useState([]);
   const [input, setInput] = useState('');
   const [editIndex, setEditIndex] = useState(-1);
+
+  // Load todos from localStorage on mount
+  useEffect(() => {
+    const savedTodos = localStorage.getItem('todos');
+    console.log('Loading todos from localStorage:', savedTodos);
+    if (savedTodos) {
+      try {
+        const parsed = JSON.parse(savedTodos);
+        console.log('Parsed todos:', parsed);
+        setTodos(parsed);
+      } catch (error) {
+        console.error('Failed to load todos from localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Save todos to localStorage whenever they change
+  useEffect(() => {
+    console.log('Saving todos to localStorage:', todos);
+    localStorage.setItem('todos', JSON.stringify(todos));
+  }, [todos]);
 
   const setEdit = (index) => {
     setInput(todos[index].todo);

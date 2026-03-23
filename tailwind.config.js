@@ -6,10 +6,10 @@ export default {
   ],
   theme: {
     extend: {
-      backgroundImage: (_) =>({
-        'custom-background':"url('./src/assets/pexels-moose-photos-1037992.jpg')"
-      })
-    },
+      backgroundImage: {
+        'custom-background': "url('/bg.jpg')",
+      },
+    }
   },
   plugins: [],
 }

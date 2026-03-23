@@ -1,68 +1,39 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 import { FaPlus, FaPencilAlt, FaTrash } from 'react-icons/fa';
-import { db } from './firebase';
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  updateDoc,
-} from 'firebase/firestore';
 
 function App() {
   const [todos, setTodos] = useState([]);
   const [input, setInput] = useState('');
   const [editIndex, setEditIndex] = useState(-1);
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'todos'), (snapshot) => {
-      setTodos(
-        snapshot.docs.map((doc) => ({ id: doc.id, todo: doc.data().todo }))
-      );
-    });
-
-    return () => unsubscribe();
-  }, []);
-
   const setEdit = (index) => {
     setInput(todos[index].todo);
     setEditIndex(index);
   };
 
-  const addTodo = async () => {
-    try {
-      if (input.trim() !== '') {
-        await addDoc(collection(db, 'todos'), {
-          todo: input,
-          timestamp: new Date(),
-        });
-        setInput('');
-      }
-    } catch (error) {
-      console.error(error.message);
+  const addTodo = () => {
+    if (input.trim() !== '') {
+      setTodos([...todos, { id: Date.now(), todo: input }]);
+      setInput('');
     }
   };
 
-  const updateTodo = async () => {
-    try {
-      if (input.trim() !== '' && editIndex !== -1) {
-        const todoDocRef = doc(db, 'todos', todos[editIndex].id);
-        await updateDoc(todoDocRef, { todo: input });
-        setEditIndex(-1);
-        setInput('');
-      }
-    } catch (error) {
-      console.error(error.message);
+  const updateTodo = () => {
+    if (input.trim() !== '' && editIndex !== -1) {
+      const updatedTodos = [...todos];
+      updatedTodos[editIndex].todo = input;
+      setTodos(updatedTodos);
+      setEditIndex(-1);
+      setInput('');
     }
   };
 
-  const removeTodo = async (id) => {
-    try {
-      await deleteDoc(doc(db, 'todos', id));
-    } catch (error) {
-      console.error(error.message);
+  const removeTodo = (index) => {
+    setTodos(todos.filter((_, i) => i !== index));
+    if (editIndex === index) {
+      setEditIndex(-1);
+      setInput('');
     }
   };
   return (
@@ -76,10 +47,15 @@ function App() {
             className="py-2 px-2 border rounded w-full focus:outline-none mr-2"
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                editIndex === -1 ? addTodo() : updateTodo();
+              }
+            }}
           />
           <button
             onClick={editIndex === -1 ? addTodo : updateTodo}
-            className="bg-gradient-to-r from-blue-400 to-blue-600 text-white py-2 px-4 rounded "
+            className="bg-gradient-to-r from-blue-400 to-blue-600 text-white py-2 px-4 rounded hover:from-blue-500 hover:to-blue-700"
           >
             {editIndex === -1 ? <FaPlus /> : <FaPencilAlt />}
           </button>
@@ -90,7 +66,7 @@ function App() {
           <ul>
             {todos.map((todo, index) => (
               <li
-                key={index}
+                key={todo.id}
                 className="flex items-center justify-between bg-white p-3 rounded shadow-md mb-3"
               >
                 <span className="text-lg">{todo.todo}</span>
@@ -102,7 +78,7 @@ function App() {
                     <FaPencilAlt />
                   </button>
                   <button
-                    onClick={() => removeTodo(todo.id)}
+                    onClick={() => removeTodo(index)}
                     className="p-2 bg-gradient-to-r from-red-400 to-red-600 text-white rounded hover:from-red-500 hover:to-red-700"
                   >
                     <FaTrash />

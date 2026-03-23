@@ -38,5 +38,9 @@ Vite will print the local URL (usually `http://localhost:5173`).
 npm run build
 npm run preview
 ```
+## Live Demo
+
+You can view my project live at: [Demo](https://todoapp-seven-opal.vercel.app/)
+
 
 
